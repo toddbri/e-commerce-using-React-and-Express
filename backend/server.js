@@ -71,30 +71,31 @@ app.post('/api/user/login', (req, resp, next) => {
   var password = req.body.password;
   console.log('username: ' + username);
   console.log('password: ' + password);
-  let userid = null;
-  let token = null;
-  let loginResults = null;
+
   db.one(`select user_id, password, username, first_name, last_name FROM users WHERE username ilike $1`, username)
   .then(results => {
     console.log('queryResults: ', results);
     userid = results.user_id;
     loginResults = results;
-    return bcrypt.compare(password, loginResults.password)})
-  .then(matched => {
+    return Promise.all([results, bcrypt.compare(password, loginResults.password)])
+    })
+  .then(args => {
+    results = args[0];
+    matched = args[1];
+
     if (matched) {
       console.log("passwords matched: " + matched);
-      token = uuid.v4();
-      db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [userid, token])
+      let token = uuid.v4();
+      let loginData = {username: username, first_name: results.first_name, last_name: results.last_name, auth_token: token };
+       return Promise.all([loginData, db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [userid, token])]);
 
-    } else {
+    } else if (!matched){
       let errMessage = {message: 'password is incorrect'};
       throw errMessage;
     }
-    let loginData = {username: username, first_name: loginResults.first_name, last_name: loginResults.last_name, auth_token: token };
-    return loginData;
 
   })
-  .then(loginData => resp.json(loginData))
+  .then(args  => resp.json(args[0]))
   .catch(err => {
     console.log('error: ', err);
     if (err.message === 'No data returned from the query.') {
@@ -110,6 +111,53 @@ app.post('/api/user/login', (req, resp, next) => {
     }n  })
   .catch(next);
 });
+
+// api for use to login
+// app.post('/api/user/login', (req, resp, next) => {
+//   console.log('entering login api');
+//   var username = req.body.username;
+//   var password = req.body.password;
+//   console.log('username: ' + username);
+//   console.log('password: ' + password);
+//   let userid = null;
+//   let token = null;
+//   let loginResults = null;
+//   db.one(`select user_id, password, username, first_name, last_name FROM users WHERE username ilike $1`, username)
+//   .then(results => {
+//     console.log('queryResults: ', results);
+//     userid = results.user_id;
+//     loginResults = results;
+//     return bcrypt.compare(password, loginResults.password)})
+//   .then(matched => {
+//     if (matched) {
+//       console.log("passwords matched: " + matched);
+//       token = uuid.v4();
+//       db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [userid, token])
+//
+//     } else {
+//       let errMessage = {message: 'password is incorrect'};
+//       throw errMessage;
+//     }
+//     let loginData = {username: username, first_name: loginResults.first_name, last_name: loginResults.last_name, auth_token: token };
+//     return loginData;
+//
+//   })
+//   .then(loginData => resp.json(loginData))
+//   .catch(err => {
+//     console.log('error: ', err);
+//     if (err.message === 'No data returned from the query.') {
+//       let errMessage = {message: 'login failed'};
+//       resp.status(401);
+//       resp.json(errMessage);
+//     } else if (err.message === 'password is incorrect'){
+//       let errMessage = {message: 'login failed'};
+//       resp.status(401);
+//       resp.json(errMessage);
+//     } else {
+//       throw err;
+//     }n  })
+//   .catch(next);
+// });
 
 app.post('/api/shopping_cart', (req,resp,next) => {
   console.log('entering shopping_cart api');
