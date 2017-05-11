@@ -45,9 +45,9 @@ app.post('/api/user/signup', (req,resp,next) => {
   .then(encryptedPassword =>  {
     return db.one(`insert into users (user_id, username, email, first_name, last_name, address1, address2, city, state, zip_code, password)
                   values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning user_id`,
-                  [user.username, user.email, user.first_name, user.last_name, user.address1, user.address2, user.city, user.state, user.zip_code, encryptedPassword])
-              ;
+                  [user.username, user.email, user.first_name, user.last_name, user.address1, user.address2, user.city, user.state, user.zip_code, encryptedPassword]);
     }
+  
   )
   .then(id => resp.json(id))
   .catch(err => {
@@ -69,25 +69,21 @@ app.post('/api/user/login', (req, resp, next) => {
   console.log('entering login api');
   var username = req.body.username;
   var password = req.body.password;
-  console.log('username: ' + username);
-  console.log('password: ' + password);
 
-  db.one(`select user_id, password, username, first_name, last_name FROM users WHERE username ilike $1`, username)
+  db.one(`select user_id, password as encryptedpassword, username, first_name, last_name FROM users WHERE username ilike $1`, username)
   .then(results => {
-    console.log('queryResults: ', results);
-    userid = results.user_id;
-    loginResults = results;
-    return Promise.all([results, bcrypt.compare(password, loginResults.password)])
+    return Promise.all([results, bcrypt.compare(password, results.encryptedpassword)])
     })
   .then(args => {
-    results = args[0];
-    matched = args[1];
+
+    let results = args[0];
+    let matched = args[1];
 
     if (matched) {
       console.log("passwords matched: " + matched);
       let token = uuid.v4();
       let loginData = {username: username, first_name: results.first_name, last_name: results.last_name, auth_token: token };
-       return Promise.all([loginData, db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [userid, token])]);
+       return Promise.all([loginData, db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [results.user_id, token])]);
 
     } else if (!matched){
       let errMessage = {message: 'password is incorrect'};
@@ -111,53 +107,6 @@ app.post('/api/user/login', (req, resp, next) => {
     }n  })
   .catch(next);
 });
-
-// api for use to login
-// app.post('/api/user/login', (req, resp, next) => {
-//   console.log('entering login api');
-//   var username = req.body.username;
-//   var password = req.body.password;
-//   console.log('username: ' + username);
-//   console.log('password: ' + password);
-//   let userid = null;
-//   let token = null;
-//   let loginResults = null;
-//   db.one(`select user_id, password, username, first_name, last_name FROM users WHERE username ilike $1`, username)
-//   .then(results => {
-//     console.log('queryResults: ', results);
-//     userid = results.user_id;
-//     loginResults = results;
-//     return bcrypt.compare(password, loginResults.password)})
-//   .then(matched => {
-//     if (matched) {
-//       console.log("passwords matched: " + matched);
-//       token = uuid.v4();
-//       db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [userid, token])
-//
-//     } else {
-//       let errMessage = {message: 'password is incorrect'};
-//       throw errMessage;
-//     }
-//     let loginData = {username: username, first_name: loginResults.first_name, last_name: loginResults.last_name, auth_token: token };
-//     return loginData;
-//
-//   })
-//   .then(loginData => resp.json(loginData))
-//   .catch(err => {
-//     console.log('error: ', err);
-//     if (err.message === 'No data returned from the query.') {
-//       let errMessage = {message: 'login failed'};
-//       resp.status(401);
-//       resp.json(errMessage);
-//     } else if (err.message === 'password is incorrect'){
-//       let errMessage = {message: 'login failed'};
-//       resp.status(401);
-//       resp.json(errMessage);
-//     } else {
-//       throw err;
-//     }n  })
-//   .catch(next);
-// });
 
 app.post('/api/shopping_cart', (req,resp,next) => {
   console.log('entering shopping_cart api');
@@ -193,19 +142,10 @@ app.post('/api/shopping_cart', (req,resp,next) => {
 });
 // api for listing items in user shopping cart
 app.post('/api/shopping_cart_items', (req, resp, next) => {
-  console.log('entering shopping_cart_items api');
-  console.log('user_token: ' + req.body.user_token);
 
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
-  .then( user => {
-    console.log("id returned: " , user);
-    return db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id);
-  })
-  .then(results => {
-      console.log('shopping cart items result: ', results);
-
-      resp.json(results);
-  } )
+  .then( user => db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id))
+  .then(results => resp.json(results))
   .catch(err => {
     console.log("error: ", err);
     if (err.message === 'No data returned from the query.') {
@@ -228,39 +168,33 @@ app.post('/api/shopping_cart_items', (req, resp, next) => {
 
 // api to allow user to checkout with items in shopping cart
 app.post('/api/shopping_cart/checkout', (req, resp, next) => {
-  console.log('entering shopping_cart checkout api');
-  console.log('user_token: ' + req.body.user_token);
-  let shoppingCartsItems = null;
-  let userid = null;
+
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
-  .then( user => {
-    console.log("id returned: " , user);
-    userid = user.user_id;
-    return db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id);
-  })
-  .then(items => {
-      console.log('shopping cart items result: ', items);
-      if (items.length > 0 ){
+  .then( user => Promise.all([user.user_id, db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id) ] ))
+  .then( args => {
+
+      let userid = args[0];
+      let items = args[1];
+       if (items.length > 0 ){
         shoppingCartsItems = items;
-        return db.one(`insert into purchases (purchase_id, user_id) VALUES (default, $1) returning purchase_id`, userid);
+        return Promise.all([ userid, items, db.one(`insert into purchases (purchase_id, user_id) VALUES (default, $1) returning purchase_id`, userid)]);
       } else {
         throw {message: "no items in shopping cart"};
       }
   } )
-  .then (purchaseID => {
-    console.log("purchaseID: ", purchaseID);
-    if (purchaseID.purchase_id > 0 ){
-      let arrPurchases = [];
-      shoppingCartsItems.forEach(item => {
-        console.log('item: ', item);
-        arrPurchases.push(db.one(`insert into purchased_products (id, purchase_id, product_id) VALUES (default, $1, $2) returning id`, [purchaseID.purchase_id, item.product_id]))});
+  .then (args => {
+    let userid = args[0];
+    let items = args[1];
+    let purchaseID = args[2].purchase_id;
 
-      return Promise.all(arrPurchases);
-    }
+    let arrPurchases = [userid];
+    items.forEach(item => arrPurchases.push(db.one(`insert into purchased_products (id, purchase_id, product_id) VALUES (default, $1, $2) returning id`, [purchaseID, item.product_id])));
+
+    return Promise.all(arrPurchases);
 
   })
-  .then(() => db.none(`delete from shoppingcart WHERE user_id = $1`,userid))
-  .then( () => resp.json({message: 'purchase complete'}))
+  .then(args => db.none(`delete from shoppingcart WHERE user_id = $1`, args[0]))
+  .then(() => resp.json({message: 'purchase complete'}))
   .catch(err => {
     console.log("error: ", err);
     if (err.message === 'No data returned from the query.') {
