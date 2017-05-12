@@ -16,13 +16,13 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.get('/api/products', (req, resp, next) => {
-  db.any('select * from products join manufacturers on products.manufacturer_id = manufacturers.manufacturer_id')
+  db.any('select * from products')
     .then(products => resp.json(products))
     .catch(next);
 });
 
 app.get('/api/product/:id', (req, resp, next) => {
-  db.any('select * from products join manufacturers on products.manufacturer_id = manufacturers.manufacturer_id where product_id = $1', req.params.id)
+  db.any('select * from products where product_id = $1', req.params.id)
     .then(product => {
       if (product.length === 1){
           resp.json(product);
@@ -47,7 +47,7 @@ app.post('/api/user/signup', (req,resp,next) => {
                   values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning user_id`,
                   [user.username, user.email, user.first_name, user.last_name, user.address1, user.address2, user.city, user.state, user.zip_code, encryptedPassword]);
     }
-  
+
   )
   .then(id => resp.json(id))
   .catch(err => {
