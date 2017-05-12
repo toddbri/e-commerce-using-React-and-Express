@@ -29,7 +29,7 @@ componentWillReceiveProps(newProps){
         <div className="productName">{item.product_name}</div>
         <Link to={'/donut/' + item.product_id}><img alt="productImage" className="donutImage" src={'/images/' + item.image_url}/></Link>
         <div className="itemPrice">$ {parseFloat(item.product_price).toFixed(2)}</div>
-        <button onClick={this.props.addItemToCart(item.product_id)} className="addToCartButton">Add to Cart</button>
+        <button onClick={()=>this.props.addItemToCart(item.product_id)} className="addToCartButton">Add to Cart</button>
 
         </div>);
     let noPage = null;

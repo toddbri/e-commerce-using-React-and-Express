@@ -29,9 +29,10 @@ componentWillReceiveProps(newProps){
                   <img alt="productPic" className="singleProductImage" src={'/images/' + this.props.imageUrl}/>
                 </div>
                 <div className="singleProductDetails">
-                  {this.props.productName}
-                  {this.props.productDescription}
-                  {'$ ' + parseFloat(this.props.productPrice).toFixed(2)}
+                <p className="singleProductName">{this.props.productName}</p>
+                <p className="singleProductDescription">{this.props.productDescription}</p>
+                <p className="singleProductPrice">{'$ ' + parseFloat(this.props.productPrice).toFixed(2)}</p>
+                <button onClick={()=>this.props.addItemToCart(this.props.productID)} className="addToCartButtonSingleProduct">Add to Cart</button>
                 </div>
                 </div>;
 

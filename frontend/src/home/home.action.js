@@ -43,7 +43,7 @@ export function addItemToCart(product_id){
   let asyncAction = function(dispatch) {
     let destPort = 4000;
     $.ajax({
-      url: 'http://localhost:'+ destPort + '/api/shopping_cart/' + product_id,
+      url: 'http://localhost:'+ destPort + '/api/shopping_cart',
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify({product_id: product_id, user_token: "2697a265-99cd-4325-bfb5-b99258829dba"})
