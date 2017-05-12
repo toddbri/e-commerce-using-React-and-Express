@@ -1,9 +1,22 @@
 // const INITIAL_STATE = {loggedinname: 'Guest', username: '', password: '', signin: false, signup:false, token: ''};
-const INITIAL_STATE = {shoppingcartCount: 0};
+// const INITIAL_STATE = {productName: '', productDescription: '', productPrice: 0, imageUrl: '', productID: null};
+
+const INITIAL_STATE = {shoppingCartItems: [], productName: '', productDescription: '', productPrice: 0, imageUrl: '', productID: null, products: []};
 
 function reducer(state = INITIAL_STATE, action){
-  console.log('in App reducer');
-  console.log('App state: ', state);
+
+  if (action.type === 'displayDonut'){
+    let donut = action.payload[0];
+    console.log("donut: ", donut);
+    return Object.assign({},state,{productName: donut.product_name, productDescription: donut.product_description, productPrice: donut.product_price, imageUrl: donut.image_url, productID: donut.product_id});
+  }
+
+  if (action.type === 'displayProducts'){
+    console.log("in the displayProducts in the home reducer");
+    // return Object.assign({},state,{pageInfo: action.payload, editing: false, doesntExist: false});
+
+    return Object.assign({},state,{products: action.payload});
+  }
 
   if (action.type === 'action1'){
     console.log('action1 handler');
@@ -38,32 +51,7 @@ function reducer(state = INITIAL_STATE, action){
     console.log("action4 handler");
     return Object.assign({});  // this would clear all state for this partition.
   }
-  //
-  // if (action.type === 'signIn'){
-  //   return Object.assign({});
-  // }
-  //
-  // if (action.type === 'usernameTyping'){
-  //   console.log('action data-username: ' + action.username);
-  //   return Object.assign({}, state, {username: action.username});
-  //
-  // }
-  //
-  // if (action.type === 'passwordTyping'){
-  //   console.log('action data-password: ' + action.password);
-  //   return Object.assign({},state, {password: action.password});
-  //
-  // }
-  //
-  // if (action.type === 'accountcreated'){
-  //   console.log('user account was created ok');
-  //   return Object.assign({},state, {signup: false});
-  // }
-  //
-  // if (action.type === 'usersignedin'){
-  //   console.log('user account was created ok');
-  //   return Object.assign({},state, {signin: false, loggedinname: action.username, token: action.token});
-  // }
+
 
   return state;
 }

@@ -3,18 +3,10 @@ import ReactDOM from 'react-dom';
 import AppContainer from './App';
 import * as Redux from 'redux';
 import * as ReactRedux from 'react-redux';
-
-import DonutReducer from './target1/target1.reducer';
-import DonutContainer from './target1/target1';
-
-import HomeReducer from './home/home.reducer';
+import DonutContainer from './donut/donut';
 import HomeContainer from './home/home';
-
-// import NavBarReducer from './navbar/NavBar.reducer';
-
-import AppReducer from './App.reducer';
+import reducer from './App.reducer';
 import ReduxThunk from 'redux-thunk';
-// import * as actions from './wiki-page/wikipage.action'
 // import {Router, Route, Link, IndexLink, hashHistory, IndexRoute} from 'react-router';
 import {Router, Route, hashHistory, IndexRoute} from 'react-router';
 import './index.css';
@@ -26,14 +18,6 @@ class Unknown extends React.Component {
     return (<div className="unknownPage" >Sorry, I'm not familiar with that page.</div>);
   }
 }
-
-const reducer = Redux.combineReducers({
-  App: AppReducer,
-  Donut: DonutReducer,
-  Home: HomeReducer
-
-});
-
 
 const store = Redux.createStore(
   reducer,
