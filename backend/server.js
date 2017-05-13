@@ -153,7 +153,9 @@ app.post('/api/shopping_cart', (req,resp,next) => {
 // api for listing items in user shopping cart
 app.post('/api/shopping_cart_items', (req, resp, next) => {
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
-  .then( user => db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id))
+  .then( user => db.any(`select count(shoppingcart.product_id) as quantity, product_name, product_price, (count(shoppingcart.product_id)* product_price) as extended
+                        FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1 group by shoppingcart.product_id, product_name,
+                        product_price order by quantity desc`, user.user_id))
   .then(results => resp.json(results))
   .catch(err => {
     console.log("error: ", err);

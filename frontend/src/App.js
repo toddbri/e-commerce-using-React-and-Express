@@ -20,9 +20,9 @@ class AppLayout extends Component {
                       <input className='signininput' value={this.props.un} name="un" onChange={(event) => this.props.typing(event)} type="text"></input>
                       <p className="label">password</p>
                       <input className='signininput' value={this.props.pwd} name="pwd" onChange={(event) => this.props.typing(event)} type="text"></input>
-                      <div> <button onClick={() => this.props.logIn(this.props.un, this.props.pwd)}>Sign In</button></div>
+                      <div> <button className="loginbutton" onClick={() => this.props.logIn(this.props.un, this.props.pwd)}>Sign In</button></div>
 
-                      <div><button onClick={this.props.logOut}>Log Out</button></div>
+                      <div><button  className="logoutbutton" onClick={this.props.logOut}>Log Out</button></div>
                     </div>
                 </div>;
 

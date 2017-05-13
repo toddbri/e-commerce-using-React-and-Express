@@ -94,7 +94,7 @@ export function logIn(un, pwd){
       Cookies.set('zip_code', userObject.zip_code);
 
       dispatch({type:'updateUserInfo', payload: userObject});
-      // this.addItemToCart(-1,userObject.auth_token);
+      addItemToCart(-1,userObject.auth_token);
       // hashHistory.push('/');
       }
     )

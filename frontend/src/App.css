@@ -124,9 +124,16 @@ font-family: 'Muli', sans-serif;
   margin: auto;
 
 }
+
+.loginbutton, .logoutbutton {
+  width: 75%;
+  margin: auto;
+  margin-top: 30px;
+}
 .signupinputfield {
   width: 100%;
   height: 30px;
+
 }
 
 .signupContainer  p {
@@ -136,9 +143,48 @@ font-family: 'Muli', sans-serif;
 .passwordsdifferent {
   color: red;
 }
+
+.shoppingcartcontainer {
+  width: 80%;
+  margin: auto;
+  /*border:1px solid red;*/
+
+}
+tr {
+  height: 50px;
+}
+
+th, td {
+  border-bottom: 1px solid grey;
+}
+
+.shoppingcarttable {
+  border-collapse: collapse;
+  width: 100%;
+
+}
+.money {
+  text-align: right
+}
+
+.quantity {
+  text-align: center;
+}
+.checkoutbuttoncontainer {
+    text-align: center;
+}
+.checkoutbutton {
+  margin: 50px;
+  width: 300px;
+  height: 50px;
+  font-size: 30px;
+  border: none;
+}
+
 #shoppingcart {
   cursor: pointer;
 }
+
 @keyframes fadeIn {
   from { transform: scaleY(0); }
   to { transform: scaleY(1); }
