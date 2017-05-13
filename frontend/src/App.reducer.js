@@ -54,14 +54,9 @@ function reducer(state = INITIAL_STATE, action){
 
   }
 
-  // if (action.type === 'signUpErrorMessage'){
-  //   return Object.assign({}, state, {signUpErrorMessage: action.message});
-  //
-  // }
 
   if (action.type === 'updateUserInfo'){
     let user = action.payload;
-    console.log('reducer user: ', user);
     return Object.assign({}, state, {username: user.username,
        auth_token: user.auth_token, email: user.email, firstName: user.first_name,
        lastName: user.last_name, address1: user.addres1, address2: user.address2,

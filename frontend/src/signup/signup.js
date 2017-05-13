@@ -7,16 +7,13 @@ class SignUp extends React.Component {
 
 
     validateInputs(){
-      // if (this.props.firstName === '' || this.props.lastName === '' || this.props.signUpUsername === '' || this.props.email === '' || this.props.signUpPassword === '' || this.props.confirmPassword){
-      //     alert( "All Fields Must be Filled Out");
-      // } else {
-          let tmpUser = {username: this.props.signUpUsername, first_name: this.props.firstName, last_name: this.props.lastName,
-                          email: this.props.email, address1: '', address2: '', city: '',
-                          state: '', zip_code: '', password: this.props.signUpPassword
-                        };
 
-          this.props.signUp(tmpUser);
-      // }
+      let tmpUser = {username: this.props.signUpUsername, first_name: this.props.firstName, last_name: this.props.lastName,
+                      email: this.props.email, address1: '', address2: '', city: '',
+                      state: '', zip_code: '', password: this.props.signUpPassword
+                    };
+
+      this.props.signUp(tmpUser);
 
     }
 
@@ -55,5 +52,3 @@ const SignUpContainer = ReactRedux.connect(
 )(SignUp);
 
 export default SignUpContainer;
-
-//Home Container

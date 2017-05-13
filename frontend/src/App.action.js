@@ -36,8 +36,7 @@ export function getDonut(product_id){
 }
 
 export function logOut(){
-  console.log("in logOut");
-    let asyncAction = function(dispatch) {
+     let asyncAction = function(dispatch) {
       Cookies.remove('auth_token');
       Cookies.remove('firstName');
       Cookies.remove('username');
@@ -60,7 +59,6 @@ export function addItemToCart(product_id, auth_token){
             data: JSON.stringify({product_id: product_id, user_token: auth_token})
           })
           .then(data => {
-            // Cookies.set('shoppingCartItems',data.shoppingCartCount);
             dispatch({type:'updateShoppingCartCount', payload: data.shoppingCartCount});
             }
           )
@@ -117,7 +115,6 @@ export function signUp(userObject){
       data: JSON.stringify(userObject)
     })
     .then(data => {
-      // Cookies.set('shoppingCartItems',data.shoppingCartCount);
       userObject.auth_token = data.auth_token;
       dispatch({type:'updateUserInfo', payload: userObject});
       hashHistory.push('/');
@@ -130,13 +127,9 @@ export function signUp(userObject){
 
 }
 
-// export function changeSignUpErrorMessage(message){
-//   return (dispatch) => dispatch({type: 'signUpErrorMessage', message: message});
-//
-// }
+
 
 export function showShoppingCart(auth_token){
-  console.log('entering showShoppingCart handler');
 
   let asyncAction = function(dispatch) {
     let destPort = 4000;
@@ -147,9 +140,7 @@ export function showShoppingCart(auth_token){
       data: JSON.stringify({user_token: auth_token})
     })
     .then(data => {
-      console.log('got this back: ', data);
-      // Cookies.set('shoppingCartItems',data.shoppingCartCount);
-      // userObject.auth_token = data.auth_token;
+
       dispatch({type:'displayCart', payload: data});
       hashHistory.push('/cart');
       }

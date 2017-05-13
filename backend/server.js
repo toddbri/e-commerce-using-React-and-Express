@@ -37,7 +37,6 @@ db.any('select * from products where product_id = $1', req.params.id)
 });
 // API for user to create a new account
 app.post('/api/user/signup', (req,resp,next) => {
-  console.log('entering signup api');
   let user = req.body;
   let password = req.body.password;
 
@@ -75,9 +74,8 @@ app.post('/api/user/signup', (req,resp,next) => {
 });
 // api for use to login
 app.post('/api/user/login', (req, resp, next) => {
-  console.log('entering login api');
-  var username = req.body.username;
-  var password = req.body.password;
+  let username = req.body.username;
+  let password = req.body.password;
 
   db.one(`select user_id, password as encryptedpassword, username, first_name, last_name, address1, address2, city, state, zip_code FROM users WHERE username ilike $1`, username)
   .then(results => {
@@ -89,7 +87,6 @@ app.post('/api/user/login', (req, resp, next) => {
     let matched = args[1];
 
     if (matched) {
-      console.log("passwords matched: " + matched);
       let token = uuid.v4();
       let loginData = {username: username, first_name: results.first_name, last_name: results.last_name, auth_token: token, email: results.email, address1: results.address1, address2: results.address2, city: results.city, state: results.state, zip_code: results.zip_code };
        return Promise.all([loginData, db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [results.user_id, token])]);
@@ -102,7 +99,6 @@ app.post('/api/user/login', (req, resp, next) => {
   })
   .then(args  => resp.json(args[0]))
   .catch(err => {
-    console.log('error: ', err);
     if (err.message === 'No data returned from the query.') {
       let errMessage = {message: 'login failed'};
       resp.status(401);
@@ -121,15 +117,12 @@ app.post('/api/user/login', (req, resp, next) => {
 //api to allow user to add items to the shopping cart
 
 app.post('/api/shopping_cart', (req,resp,next) => {
-  console.log('entering shopping_cart api');
-  console.log('token: ' + req.body.user_token);
-  console.log('product_id: ' + req.body.product_id);
+
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => {
     if (req.body.product_id === -1 ){
       return [user];
     }
-    console.log("id returned: " , user);
     return Promise.all([user, db.one(`insert into shoppingcart (shoppingcart_id, user_id, product_id) VALUES (default, $1, $2) returning shoppingcart_id`, [user.user_id, req.body.product_id])])
   })
   .then(results => {
@@ -138,18 +131,15 @@ app.post('/api/shopping_cart', (req,resp,next) => {
 
   })
   .then(result => {
-      console.log('number of items in the shopping cart: ', result);
       resp.json({shoppingCartCount: result.count});
   } )
   .catch(err => {
     console.log("error: ", err);
     if (err.message === 'No data returned from the query.') {
-        console.log('user_id was not found for user_token sent');
         let errMessage = {message: 'user not authenticated'};
         resp.status(401);
         resp.json(errMessage);
     } else if (err.message === 'insert or update on table "shoppingcart" violates foreign key constraint "shoppingcart_product_id_fkey"'){
-      console.log('shopping cart insert failed: ', err.message);
       let errMessage = {message: 'invalid product_id'};
       resp.status(404);
       resp.json(errMessage);
@@ -162,19 +152,16 @@ app.post('/api/shopping_cart', (req,resp,next) => {
 });
 // api for listing items in user shopping cart
 app.post('/api/shopping_cart_items', (req, resp, next) => {
-  console.log('sci input: ', req.body);
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id))
   .then(results => resp.json(results))
   .catch(err => {
     console.log("error: ", err);
     if (err.message === 'No data returned from the query.') {
-        console.log('user_id was not found for user_token sent');
         let errMessage = {message: 'user not authenticated'};
         resp.status(401);
         resp.json(errMessage);
     } else if (err.message === 'insert or update on table "shoppingcart" violates foreign key constraint "shoppingcart_product_id_fkey"'){
-      console.log('shopping cart insert failed: ', err.message);
       let errMessage = {message: 'invalid product_id'};
       resp.status(404);
       resp.json(errMessage);
@@ -218,17 +205,14 @@ app.post('/api/shopping_cart/checkout', (req, resp, next) => {
   .catch(err => {
     console.log("error: ", err);
     if (err.message === 'No data returned from the query.') {
-        console.log('user_id was not found for user_token sent');
         let errMessage = {message: 'user not authenticated'};
         resp.status(401);
         resp.json(errMessage);
     } else if (err.message === 'insert or update on table "shoppingcart" violates foreign key constraint "shoppingcart_product_id_fkey"'){
-      console.log('shopping cart insert failed: ', err.message);
       let errMessage = {message: 'invalid product_id'};
       resp.status(404);
       resp.json(errMessage);
     } else if (err.message === 'no items in shopping cart'){
-      console.log('nothing was in the shopping cart');
       resp.status(404);
       resp.json(err);
     } else {

@@ -10,8 +10,6 @@ class Home extends React.Component {
 
     }
 
-    componentWillReceiveProps(newProps){
-    }
 
     render() {
 
@@ -39,5 +37,3 @@ const HomeContainer = ReactRedux.connect(
 )(Home);
 
 export default HomeContainer;
-
-//Home Container
