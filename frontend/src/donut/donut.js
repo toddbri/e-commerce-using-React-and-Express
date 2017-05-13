@@ -1,4 +1,4 @@
-import * as actions from './donut.action'
+import * as actions from '../App.action'
 // import * as Redux from 'redux';
 import React from 'react';
 import * as ReactRedux from 'react-redux';
@@ -14,8 +14,8 @@ class Donut extends React.Component {
       }
 
       render() {
-        console.log("props supplied to donut render: ", this.props);
-        console.log("in Target1 render");
+        // console.log("props supplied to donut render: ", this.props);
+        // console.log("in Target1 render");
         let html = <div className="singleProduct">
                     <div className="singleProductImageContainer">
                       <img alt="productPic" className="singleProductImage" src={'/images/' + this.props.imageUrl}/>
@@ -24,7 +24,7 @@ class Donut extends React.Component {
                     <p className="singleProductName">{this.props.productName}</p>
                     <p className="singleProductDescription">{this.props.productDescription}</p>
                     <p className="singleProductPrice">{'$ ' + parseFloat(this.props.productPrice).toFixed(2)}</p>
-                    <button onClick={()=>this.props.addItemToCart(this.props.productID)} className="addToCartButtonSingleProduct">Add to Cart</button>
+                    <button disabled={this.props.auth_token === null} onClick={()=>this.props.addItemToCart(this.props.productID, this.props.auth_token)} className="addToCartButtonSingleProduct">Add to Cart</button>
                     </div>
                     </div>;
 

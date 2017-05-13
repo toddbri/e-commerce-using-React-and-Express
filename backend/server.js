@@ -22,7 +22,7 @@ app.get('/api/products', (req, resp, next) => {
 });
 
 app.get('/api/product/:id', (req, resp, next) => {
-  db.any('select * from products where product_id = $1', req.params.id)
+db.any('select * from products where product_id = $1', req.params.id)
     .then(product => {
       if (product.length === 1){
           resp.json(product);
@@ -43,13 +43,22 @@ app.post('/api/user/signup', (req,resp,next) => {
 
   bcrypt.hash(password, 10)
   .then(encryptedPassword =>  {
+
+    console.log('creating user: ', user);
     return db.one(`insert into users (user_id, username, email, first_name, last_name, address1, address2, city, state, zip_code, password)
                   values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning user_id`,
                   [user.username, user.email, user.first_name, user.last_name, user.address1, user.address2, user.city, user.state, user.zip_code, encryptedPassword]);
     }
 
   )
-  .then(id => resp.json(id))
+  .then(id => {
+      let token = uuid.v4();
+      console.log('user_id: ', id.user_id);
+      console.log("token is: ", token);
+      return db.one(`insert into tokens (user_id, user_token) VALUES ($1, $2) returning user_token`, [id.user_id, token]);
+
+  })
+  .then(results => resp.json({auth_token: results.user_token}))
   .catch(err => {
        if (err.message === 'duplicate key value violates unique constraint "users_username_key"'){
          resp.status(409);
@@ -70,7 +79,7 @@ app.post('/api/user/login', (req, resp, next) => {
   var username = req.body.username;
   var password = req.body.password;
 
-  db.one(`select user_id, password as encryptedpassword, username, first_name, last_name FROM users WHERE username ilike $1`, username)
+  db.one(`select user_id, password as encryptedpassword, username, first_name, last_name, address1, address2, city, state, zip_code FROM users WHERE username ilike $1`, username)
   .then(results => {
     return Promise.all([results, bcrypt.compare(password, results.encryptedpassword)])
     })
@@ -82,7 +91,7 @@ app.post('/api/user/login', (req, resp, next) => {
     if (matched) {
       console.log("passwords matched: " + matched);
       let token = uuid.v4();
-      let loginData = {username: username, first_name: results.first_name, last_name: results.last_name, auth_token: token };
+      let loginData = {username: username, first_name: results.first_name, last_name: results.last_name, auth_token: token, email: results.email, address1: results.address1, address2: results.address2, city: results.city, state: results.state, zip_code: results.zip_code };
        return Promise.all([loginData, db.none(`insert into tokens (user_id, user_token) VALUES ($1, $2)`, [results.user_id, token])]);
 
     } else if (!matched){
@@ -108,18 +117,29 @@ app.post('/api/user/login', (req, resp, next) => {
   .catch(next);
 });
 
+
+//api to allow user to add items to the shopping cart
+
 app.post('/api/shopping_cart', (req,resp,next) => {
   console.log('entering shopping_cart api');
   console.log('token: ' + req.body.user_token);
   console.log('product_id: ' + req.body.product_id);
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => {
+    if (req.body.product_id === -1 ){
+      return [user];
+    }
     console.log("id returned: " , user);
-    return db.one(`insert into shoppingcart (shoppingcart_id, user_id, product_id) VALUES (default, $1, $2) returning shoppingcart_id`, [user.user_id, req.body.product_id]);
+    return Promise.all([user, db.one(`insert into shoppingcart (shoppingcart_id, user_id, product_id) VALUES (default, $1, $2) returning shoppingcart_id`, [user.user_id, req.body.product_id])])
+  })
+  .then(results => {
+      let user_id = results[0].user_id;
+      return db.one('select count(product_id) from shoppingcart where user_id = $1', [user_id]);
+
   })
   .then(result => {
-      console.log('shopping cart insert result: ', result);
-      resp.json({id: result.shoppingcart_id});
+      console.log('number of items in the shopping cart: ', result);
+      resp.json({shoppingCartCount: result.count});
   } )
   .catch(err => {
     console.log("error: ", err);
@@ -142,7 +162,7 @@ app.post('/api/shopping_cart', (req,resp,next) => {
 });
 // api for listing items in user shopping cart
 app.post('/api/shopping_cart_items', (req, resp, next) => {
-
+  console.log('sci input: ', req.body);
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id))
   .then(results => resp.json(results))
