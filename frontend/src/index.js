@@ -7,6 +7,8 @@ import DonutContainer from './donut/donut';
 import HomeContainer from './home/home';
 import CartContainer from './cart/cart';
 import SignUpContainer from './signup/signup';
+import CheckoutContainer from './checkout/checkout';
+import ThanksContainer from './thanks/thanks';
 import reducer from './App.reducer';
 import ReduxThunk from 'redux-thunk';
 import $ from 'jquery';
@@ -69,7 +71,9 @@ let vdom = <ReactRedux.Provider store={store}>
         <Route path="/donut/:id" component={DonutContainer}/>
         <Route path="/signup" component={SignUpContainer}/>
         <Route path="/cart" component={CartContainer}/>
-        <Route path="/*" component={Unknown}/>
+        <Route path="/checkout" component={CheckoutContainer}/>
+        <Route path="/thanks" component={ThanksContainer}/>
+
       </Route>
     </div>
   </Router>

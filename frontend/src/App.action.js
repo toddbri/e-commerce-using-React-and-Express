@@ -42,6 +42,7 @@ export function logOut(){
       Cookies.remove('username');
       Cookies.remove('shoppingCartItems');
       dispatch({type: 'logout' , firstName: '', auth_token: '', username: ''});
+      hashHistory.push('/');
     };
     return asyncAction;
 
@@ -62,7 +63,9 @@ export function addItemToCart(product_id, auth_token){
             dispatch({type:'updateShoppingCartCount', payload: data.shoppingCartCount});
             }
           )
-          .catch(resp => dispatch({type: 'error', message: resp}))
+          .catch(resp => {
+            dispatch({type: 'error', message: resp})
+          })
         };
         return asyncAction;
     }
@@ -94,8 +97,22 @@ export function logIn(un, pwd){
       Cookies.set('zip_code', userObject.zip_code);
 
       dispatch({type:'updateUserInfo', payload: userObject});
-      addItemToCart(-1,userObject.auth_token);
-      // hashHistory.push('/');
+
+      let destPort = 4000;
+      $.ajax({
+        url: 'http://localhost:'+ destPort + '/api/shopping_cart',
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({product_id: -1 , user_token: userObject.auth_token})
+      })
+      .then(data => {
+        dispatch({type:'updateShoppingCartCount', payload: data.shoppingCartCount});
+        }
+      )
+      .catch(resp => {
+        dispatch({type: 'error', message: resp})
+      })
+
       }
     )
     .catch(resp => dispatch({type: 'error', message: resp}))

@@ -7,6 +7,7 @@ const cors = require('cors');
 const pgp = require('pg-promise')();
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+const config = require('./config/config.js');
 const db = pgp({
   database: 'ecommerce'
 });
@@ -14,7 +15,7 @@ const db = pgp({
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-
+console.log('something: ', config.a);
 app.get('/api/products', (req, resp, next) => {
   db.any('select * from products')
     .then(products => resp.json(products))
@@ -117,7 +118,6 @@ app.post('/api/user/login', (req, resp, next) => {
 //api to allow user to add items to the shopping cart
 
 app.post('/api/shopping_cart', (req,resp,next) => {
-
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => {
     if (req.body.product_id === -1 ){

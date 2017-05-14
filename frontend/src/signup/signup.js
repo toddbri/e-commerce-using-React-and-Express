@@ -7,13 +7,20 @@ class SignUp extends React.Component {
 
 
     validateInputs(){
+      if (this.props.signUpPassword !== this.props.confirmPassword) {
+          alert('Passwords do not match');
 
-      let tmpUser = {username: this.props.signUpUsername, first_name: this.props.firstName, last_name: this.props.lastName,
-                      email: this.props.email, address1: '', address2: '', city: '',
-                      state: '', zip_code: '', password: this.props.signUpPassword
-                    };
+      } else {
 
-      this.props.signUp(tmpUser);
+        let tmpUser = {username: this.props.signUpUsername, first_name: this.props.signUpfirstName, last_name: this.props.signUplastName,
+                        email: this.props.signUpemail, address1: '', address2: '', city: '',
+                        state: '', zip_code: '', password: this.props.signUpPassword
+                      };
+
+        this.props.signUp(tmpUser);
+
+
+      }
 
     }
 
@@ -21,13 +28,13 @@ class SignUp extends React.Component {
       let passwordsDifferent = this.props.confirmPassword === this.props.signUpPassword;
       let content = <div className="signupContainer">
             <p className="sulabel">first name</p>
-              <input className='signupinputfield' value={this.props.firstName} name="firstName" onChange={(event) => this.props.typing(event)} type="text"></input>
+              <input className='signupinputfield' value={this.props.signUpfirstName} name="signUpfirstName" onChange={(event) => this.props.typing(event)} type="text"></input>
               <p className="sulabel">last name</p>
-                <input className='signupinputfield' value={this.props.lastName} name="lastName" onChange={(event) => this.props.typing(event)} type="text"></input>
+                <input className='signupinputfield' value={this.props.signUplastName} name="signUplastName" onChange={(event) => this.props.typing(event)} type="text"></input>
             <p className="sulabel">username</p>
               <input className='signupinputfield' value={this.props.signUpUsername} name="signUpUsername" onChange={(event) => this.props.typing(event)} type="text"></input>
             <p className="sulabel">email</p>
-              <input className='signupinputfield' value={this.props.email} name="email" onChange={(event) => this.props.typing(event)} type="text"></input>
+              <input className='signupinputfield' value={this.props.signUpemail} name="email" onChange={(event) => this.props.typing(event)} type="text"></input>
             <p className="sulabel">password</p>
               <input className='signupinputfield' value={this.props.signUpPassword} name="signUpPassword" onChange={(event) => this.props.typing(event)} type="text"></input>
             <p className="sulabel">confirm password</p>

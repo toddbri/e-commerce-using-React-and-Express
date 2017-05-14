@@ -2,7 +2,7 @@ import * as actions from '../App.action'
 // import * as Redux from 'redux';
 import React from 'react';
 import * as ReactRedux from 'react-redux';
-// import {Link} from 'react-router';
+import {Link} from 'react-router';
 class Cart extends React.Component {
 
       render() {
@@ -19,7 +19,7 @@ class Cart extends React.Component {
                               <th>Unit Price</th>
                               <th>Extended</th>
                             </tr>
-                            {items.map((item, idx) => <tr>
+                            {items.map((item, idx) => <tr key={idx}>
                                           <td className='quantity'>{item.quantity}</td>
                                           <td>{item.product_name}</td>
                                           <td className="money">{parseFloat(item.product_price).toFixed(2)}</td>
@@ -27,7 +27,7 @@ class Cart extends React.Component {
                           <tr><td></td><td>Total</td><td></td><td className="money">{total}</td></tr>
                           </table>
                       </div>
-        let checkout = <div className="checkoutbuttoncontainer"><button className="checkoutbutton">Checkout</button></div>
+        let checkout = <div className="checkoutbuttoncontainer"><Link to="/checkout"><button className="checkoutbutton">Checkout</button></Link></div>
 
         return (<div>
                 {table}
