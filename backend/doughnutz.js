@@ -274,6 +274,6 @@ app.use((err, req, resp, next) => {
   });
 });
 
-app.listen(4000, () => {
-  console.log('Listening on port 4000');
+app.listen(5006, () => {
+  console.log('Listening on port 5006');
 });
