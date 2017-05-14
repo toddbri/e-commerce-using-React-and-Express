@@ -184,8 +184,7 @@ app.post('/api/shopping_cart_items', (req, resp, next) => {
 
 // api to allow user to checkout with items in shopping cart
 app.post('/api/checkout', (req, resp, next) => {
-  console.log('in api/checkout');
-  console.log('token sent: ', req.body.user_token);
+
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => Promise.all([user.user_id, db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id) ] ))
   .then( args => {

@@ -1,4 +1,3 @@
-// import {hashHistory} from 'react-router';
 
 const INITIAL_STATE = {shoppingCartItems: 0, productName: '', productDescription: '', productPrice: 0, imageUrl: '', productID: null, products: [],
                       auth_token: null , username: '', password: '', signUpPassword: '', confirmPassword: '', email:'', firstName: '', lastName: '',

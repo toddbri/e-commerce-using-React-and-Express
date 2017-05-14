@@ -53,7 +53,6 @@ export function logOut(){
         }
 
       });
-      // getProducts(dispatch);
       dispatch({type: 'logout'});
       hashHistory.push('/');
     };
@@ -89,6 +88,8 @@ export function typing(event){
   return (dispatch) => dispatch({type: 'typing', field: event.target.name, value: event.target.value});
 
 }
+
+
 export function logIn(un, pwd){
   let asyncAction = function(dispatch) {
 

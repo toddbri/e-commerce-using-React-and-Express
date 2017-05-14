@@ -12,7 +12,6 @@ import ThanksContainer from './thanks/thanks';
 import reducer from './App.reducer';
 import ReduxThunk from 'redux-thunk';
 import $ from 'jquery';
-// import {Router, Route, Link, IndexLink, hashHistory, IndexRoute} from 'react-router';
 import {Router, Route, hashHistory, IndexRoute} from 'react-router';
 import Cookies from 'js-cookie';
 const BASEURL = location.hostname === 'localhost' ? 'http://localhost:4000' : '';

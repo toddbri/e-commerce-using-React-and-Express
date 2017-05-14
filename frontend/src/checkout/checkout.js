@@ -1,16 +1,11 @@
 import * as actions from '../App.action'
-// import * as Redux from 'redux';
 import React from 'react';
 import * as ReactRedux from 'react-redux';
-// import config from './config';
-// import {Link} from 'react-router';
-// import {hashHistory} from 'react-router';
 
 class Checkout extends React.Component {
 
       validateInputs(total){
           this.props.chargeCard(parseInt(100 * total, 10) ,this.props.auth_token, this.props.email);
-          // hashHistory.push('/thanks');
 
       }
 

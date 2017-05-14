@@ -1,8 +1,6 @@
 import * as actions from '../App.action'
-// import * as Redux from 'redux';
 import React from 'react';
 import * as ReactRedux from 'react-redux';
-// import {Link} from 'react-router';
 class SignUp extends React.Component {
 
 
