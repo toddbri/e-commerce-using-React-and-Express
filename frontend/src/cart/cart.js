@@ -6,7 +6,6 @@ import {Link} from 'react-router';
 class Cart extends React.Component {
 
       render() {
-
         let items = this.props.products;
         let total = 0;
         total = items.reduce((accum, item) => accum + item.extended, 0);
