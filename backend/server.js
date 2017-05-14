@@ -8,6 +8,8 @@ const pgp = require('pg-promise')();
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const config = require('./config/config.js');
+const stripePackage = require('stripe');
+const stripe = stripePackage(config.stripeSecret);
 const db = pgp({
   database: 'ecommerce'
 });
@@ -78,7 +80,7 @@ app.post('/api/user/login', (req, resp, next) => {
   let username = req.body.username;
   let password = req.body.password;
 
-  db.one(`select user_id, password as encryptedpassword, username, first_name, last_name, address1, address2, city, state, zip_code FROM users WHERE username ilike $1`, username)
+  db.one(`select user_id, password as encryptedpassword, username, email, first_name, last_name, address1, address2, city, state, zip_code FROM users WHERE username ilike $1`, username)
   .then(results => {
     return Promise.all([results, bcrypt.compare(password, results.encryptedpassword)])
     })
@@ -98,19 +100,22 @@ app.post('/api/user/login', (req, resp, next) => {
     }
 
   })
-  .then(args  => resp.json(args[0]))
+  .then(args  => {console.log('going to respond');resp.json(args[0])})
   .catch(err => {
+    console.log('handing error during login: ', err);
     if (err.message === 'No data returned from the query.') {
       let errMessage = {message: 'login failed'};
       resp.status(401);
       resp.json(errMessage);
-    } else if (err.message === 'password is incorrect'){
+    } else if (err.message === 'password is incorrect') {
       let errMessage = {message: 'login failed'};
       resp.status(401);
       resp.json(errMessage);
     } else {
+      console.log("something bad happened");
       throw err;
-    }n  })
+     }
+  })
   .catch(next);
 });
 
@@ -118,6 +123,7 @@ app.post('/api/user/login', (req, resp, next) => {
 //api to allow user to add items to the shopping cart
 
 app.post('/api/shopping_cart', (req,resp,next) => {
+
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => {
     if (req.body.product_id === -1 ){
@@ -152,6 +158,7 @@ app.post('/api/shopping_cart', (req,resp,next) => {
 });
 // api for listing items in user shopping cart
 app.post('/api/shopping_cart_items', (req, resp, next) => {
+  console.log('shopping_cart_items');
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => db.any(`select count(shoppingcart.product_id) as quantity, product_name, product_price, (count(shoppingcart.product_id)* product_price) as extended
                         FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1 group by shoppingcart.product_id, product_name,
@@ -176,8 +183,9 @@ app.post('/api/shopping_cart_items', (req, resp, next) => {
 });
 
 // api to allow user to checkout with items in shopping cart
-app.post('/api/shopping_cart/checkout', (req, resp, next) => {
-
+app.post('/api/checkout', (req, resp, next) => {
+  console.log('in api/checkout');
+  console.log('token sent: ', req.body.user_token);
   db.one(`select user_id FROM tokens WHERE user_token = $1`, req.body.user_token)
   .then( user => Promise.all([user.user_id, db.any(`select * FROM shoppingcart join products on shoppingcart.product_id = products.product_id where user_id = $1`, user.user_id) ] ))
   .then( args => {
@@ -223,6 +231,41 @@ app.post('/api/shopping_cart/checkout', (req, resp, next) => {
   })
   .catch(next);
 });
+
+// Click Submit payment button
+app.post('/api/pay', (req, resp, next) => {
+    console.log('starting api/pay');
+    let stripeToken = req.body.stripeToken;
+    let email = req.body.email;
+    let amount = req.body.amount;
+    console.log(stripeToken, email, amount);
+    stripe.customers.create({
+            email: email
+        })
+        .then(customer => {
+          console.log('customer: ', customer);
+            return stripe.customers.createSource(customer.id, {
+                source: stripeToken
+            });
+        })
+        .then(source => {
+          console.log('source: ', source);
+            return stripe.charges.create({
+                amount: amount,
+                currency: 'usd',
+                customer: source.customer,
+                description: 'Test Charge'
+            });
+        })
+        .then(charge => {
+          console.log('charge: ', charge);
+            console.log(charge);
+        })
+        .catch(err => {
+            console.log(err.message);
+        })
+    resp.json({message: "purchase successful"});
+})
 
 app.use((err, req, resp, next) => {
   resp.status(500);

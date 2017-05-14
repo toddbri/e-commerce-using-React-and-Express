@@ -8,7 +8,6 @@ class SignUp extends React.Component {
 
     validateInputs(){
       if (this.props.signUpPassword !== this.props.confirmPassword) {
-          alert('Passwords do not match');
 
       } else {
 
@@ -25,7 +24,7 @@ class SignUp extends React.Component {
     }
 
     render() {
-      let passwordsDifferent = this.props.confirmPassword === this.props.signUpPassword;
+      let passwordsDifferent = (this.props.confirmPassword !== this.props.signUpPassword);
       let content = <div className="signupContainer">
             <p className="sulabel">first name</p>
               <input className='signupinputfield' value={this.props.signUpfirstName} name="signUpfirstName" onChange={(event) => this.props.typing(event)} type="text"></input>
@@ -39,8 +38,8 @@ class SignUp extends React.Component {
               <input className='signupinputfield' value={this.props.signUpPassword} name="signUpPassword" onChange={(event) => this.props.typing(event)} type="text"></input>
             <p className="sulabel">confirm password</p>
               <input className='signupinputfield' value={this.props.confirmPassword} name="confirmPassword" onChange={(event) => this.props.typing(event)} type="text"></input>
-            <p className="passwordsdifferent">{passwordsDifferent ? '  ' : 'password are not the same'}</p>
-            <button onClick={() => this.validateInputs()} className="signUpButton">Submit</button>
+            <p className="passwordsdifferent">{passwordsDifferent ? 'password are not the same' : '' }</p>
+            <button disabled={passwordsDifferent} onClick={() => this.validateInputs()} className={passwordsDifferent  || this.props.signUpPassword === '' ? "signUpButtonGreyedOut" : "signUpButton"}>Submit</button>
 
           </div>;
 

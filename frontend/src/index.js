@@ -15,16 +15,9 @@ import $ from 'jquery';
 // import {Router, Route, Link, IndexLink, hashHistory, IndexRoute} from 'react-router';
 import {Router, Route, hashHistory, IndexRoute} from 'react-router';
 import Cookies from 'js-cookie';
+const BASEURL = location.hostname === 'localhost' ? 'http://localhost:4000' : '';
 import './index.css';
 
-
-class Unknown extends React.Component {
-
-  render() {
-    return (<div className="unknownPage" >Sorry, I'm not familiar with that page.</div>);
-  }
-
-}
 
 const store = Redux.createStore(
   reducer,
@@ -40,13 +33,16 @@ let email = Cookies.get('email');
 let city = Cookies.get('city');
 let state = Cookies.get('state');
 let zipcode = Cookies.get('zipcode');
+let username = Cookies.get('username');
 
+auth_token = auth_token === "null" ? null : auth_token; //convert from string null to real null if needed
 
-if (auth_token !== null || auth_token !== undefined) {
-  store.dispatch({type: 'reauthUser', auth_token: auth_token, firstName: firstName, lastName: lastName, email: email, city: city, state: state, zipcode: zipcode});
-  let destPort = 4000;
-  $.ajax({
-    url: 'http://localhost:'+ destPort + '/api/shopping_cart',
+if (auth_token !== null) {
+
+  store.dispatch({type: 'reauthUser', auth_token: auth_token, firstName: firstName, lastName: lastName, email: email,
+                  city: city, state: state, zipcode: zipcode, username: username});
+   $.ajax({
+    url: BASEURL +  '/api/shopping_cart',
     type: "POST",
     contentType: "application/json",
     data: JSON.stringify({product_id: -1, user_token: auth_token})

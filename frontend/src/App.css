@@ -173,6 +173,10 @@ th, td {
   text-align: right
 }
 
+.signUpButtonGreyedOut {
+  background-color: red;
+}
+
 .quantity {
   text-align: center;
 }

@@ -1,12 +1,15 @@
 import $ from 'jquery';
 import Cookies from 'js-cookie';
 import {hashHistory} from 'react-router';
+import config from './config/config';
+const BASEURL = location.hostname === 'localhost' ? 'http://localhost:4000' : '';
+const StripeCheckout = window.StripeCheckout;
+const stripePK = config.stripePK;
 
 export function getProducts(){
   let asyncAction = function(dispatch) {
-    let destPort = 4000;
     $.ajax({
-      url: 'http://localhost:'+ destPort + '/api/products'
+      url: BASEURL + '/api/products'
     })
     .then(data => {
       dispatch({type:'displayProducts', payload: data});
@@ -21,9 +24,8 @@ export function getProducts(){
 
 export function getDonut(product_id){
   let asyncAction = function(dispatch) {
-    let destPort = 4000;
     $.ajax({
-      url: 'http://localhost:'+ destPort + '/api/product/' + product_id
+      url: BASEURL + '/api/product/' + product_id
     })
     .then(data => {
       dispatch({type:'displayDonut', payload: data});
@@ -35,13 +37,24 @@ export function getDonut(product_id){
 
 }
 
+
+const INITIAL_STATE = {shoppingCartItems: 0, productName: '', productDescription: '', productPrice: 0, imageUrl: '', productID: null, products: [],
+                      auth_token: null, username: '', password: '', signUpPassword: '', confirmPassword: '', email:'', firstName: '', lastName: '',
+                      address1: '', address2: '', city: '', state: '', zipcode: '', shoppingCart: [], signUpUsername: '',
+                      un: '', pwd:''};
+
+const EXEMPT = ['shoppingCartItems', 'products'];
+
 export function logOut(){
      let asyncAction = function(dispatch) {
-      Cookies.remove('auth_token');
-      Cookies.remove('firstName');
-      Cookies.remove('username');
-      Cookies.remove('shoppingCartItems');
-      dispatch({type: 'logout' , firstName: '', auth_token: '', username: ''});
+      Object.keys(INITIAL_STATE).forEach(key => {
+        if (EXEMPT.indexOf(key) === -1 ) {
+          Cookies.set(key,INITIAL_STATE[key]);
+        }
+
+      });
+      // getProducts(dispatch);
+      dispatch({type: 'logout'});
       hashHistory.push('/');
     };
     return asyncAction;
@@ -52,9 +65,9 @@ export function addItemToCart(product_id, auth_token){
   if (auth_token !== null){
 
         let asyncAction = function(dispatch) {
-          let destPort = 4000;
+
           $.ajax({
-            url: 'http://localhost:'+ destPort + '/api/shopping_cart',
+            url: BASEURL + '/api/shopping_cart',
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({product_id: product_id, user_token: auth_token})
@@ -78,9 +91,9 @@ export function typing(event){
 }
 export function logIn(un, pwd){
   let asyncAction = function(dispatch) {
-    let destPort = 4000;
+
     $.ajax({
-      url: 'http://localhost:'+ destPort + '/api/user/login',
+      url: BASEURL + '/api/user/login',
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify({username: un, password: pwd})
@@ -94,19 +107,21 @@ export function logIn(un, pwd){
       Cookies.set('address2', userObject.address2);
       Cookies.set('city', userObject.city);
       Cookies.set('state', userObject.state);
-      Cookies.set('zip_code', userObject.zip_code);
+      Cookies.set('zipcode', userObject.zip_code);
+      Cookies.set('email', userObject.email);
 
       dispatch({type:'updateUserInfo', payload: userObject});
 
-      let destPort = 4000;
+
       $.ajax({
-        url: 'http://localhost:'+ destPort + '/api/shopping_cart',
+        url: BASEURL + '/api/shopping_cart',
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify({product_id: -1 , user_token: userObject.auth_token})
       })
       .then(data => {
         dispatch({type:'updateShoppingCartCount', payload: data.shoppingCartCount});
+        hashHistory.push('/');
         }
       )
       .catch(resp => {
@@ -124,9 +139,9 @@ export function logIn(un, pwd){
 
 export function signUp(userObject){
   let asyncAction = function(dispatch) {
-    let destPort = 4000;
+
     $.ajax({
-      url: 'http://localhost:'+ destPort + '/api/user/signup',
+      url: BASEURL + '/api/user/signup',
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify(userObject)
@@ -149,9 +164,9 @@ export function signUp(userObject){
 export function showShoppingCart(auth_token){
 
   let asyncAction = function(dispatch) {
-    let destPort = 4000;
+
     $.ajax({
-      url: 'http://localhost:'+ destPort + '/api/shopping_cart_items',
+      url: BASEURL + '/api/shopping_cart_items',
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify({user_token: auth_token})
@@ -167,4 +182,53 @@ export function showShoppingCart(auth_token){
 
   return asyncAction;
 
+}
+
+export function chargeCard(amount, auth_token, email) {
+    let asyncAction = function(dispatch) {
+        let handler = StripeCheckout.configure({ //this configures Stripe
+            key: stripePK,
+            image: '/images/glazed.jpeg',
+            locale: 'auto',
+            token: function callback(token) {
+                var stripeToken = token.id;
+                console.log('Public stripe token recieved if payment info verified: ', stripeToken);
+                // If verified, send stripe token to backend
+                $.ajax({
+                    type: 'POST',
+                    url: BASEURL + '/api/pay',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        stripeToken: stripeToken,
+                        email: email,
+                        amount: amount
+                    })
+                })
+                // After payment is processed in the back end send another request to update the database and set state
+                .then(response => {
+                    console.log("ok, i heard back from stripe");
+                    $.ajax({
+                        type: 'POST',
+                        url: BASEURL + '/api/checkout',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            user_token: auth_token
+                        })
+                    })
+                    .then(response => {
+                      console.log('it worked!');
+                      dispatch({type:'updateShoppingCartCount', payload: 0});
+                      hashHistory.push('/thanks');
+
+                    })
+                })
+            }
+        });
+
+        handler.open({        //this kicks off Stripe payment
+            name: 'Dough Nutz',
+            amount: amount
+        });
+    }
+    return asyncAction;
 }
