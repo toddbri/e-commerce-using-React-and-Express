@@ -10,9 +10,7 @@ const uuid = require('uuid');
 const config = require('./config/config.js');
 const stripePackage = require('stripe');
 const stripe = stripePackage(config.stripeSecret);
-const db = pgp({
-  database: 'ecommerce'
-});
+const db = pgp(config.db);
 
 const app = express();
 app.use(bodyParser.json());
