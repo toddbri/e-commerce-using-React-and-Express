@@ -15,7 +15,7 @@ const db = pgp(config.db);
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static('/public'));
+app.use('/', express.static(__dirname + '/public'));
 
 app.get('/api/products', (req, resp, next) => {
   db.any('select * from products')
