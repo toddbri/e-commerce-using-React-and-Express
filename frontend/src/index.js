@@ -34,7 +34,9 @@ let state = Cookies.get('state');
 let zipcode = Cookies.get('zipcode');
 let username = Cookies.get('username');
 
-auth_token = auth_token === "null" ? null : auth_token; //convert from string null to real null if needed
+
+
+auth_token = (auth_token === "null" || auth_token === undefined) ? null : auth_token; //convert from string null to real null if needed
 
 if (auth_token !== null) {
 

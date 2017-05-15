@@ -15,6 +15,7 @@ const db = pgp(config.db);
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static('/public'));
 
 app.get('/api/products', (req, resp, next) => {
   db.any('select * from products')
@@ -271,6 +272,8 @@ app.use((err, req, resp, next) => {
     stack: err.stack.split('\n')
   });
 });
+
+
 
 app.listen(5006, () => {
   console.log('Listening on port 5006');

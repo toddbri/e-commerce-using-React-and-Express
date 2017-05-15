@@ -11,11 +11,11 @@ class AppLayout extends Component {
 
     let login = <div>
                   <div className="signup"><Link to="/signup">Sign up</Link></div>
-                <div className="signin"><p className="label">username</p>
+                  <div className="signin"><p className="label">username</p>
                   <input className='signininput' value={this.props.un} name="un" onChange={(event) => this.props.typing(event)} type="text"></input>
                   <p className="label">password</p>
                   <input className='signininput' value={this.props.pwd} name="pwd" onChange={(event) => this.props.typing(event)} type="text"></input>
-                  <div> <button disabled={this.props.un === ''? true: false} className="loginbutton" onClick={() => this.props.logIn(this.props.un, this.props.pwd)}>Log In</button></div>
+                  <div> <button disabled={this.props.un === '' ? true: false} className="loginbutton" onClick={() => this.props.logIn(this.props.un, this.props.pwd)}>Log In</button></div>
                 </div>
                 </div>;
 

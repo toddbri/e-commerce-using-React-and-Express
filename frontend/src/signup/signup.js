@@ -16,7 +16,6 @@ class SignUp extends React.Component {
 
         this.props.signUp(tmpUser);
 
-
       }
 
     }
